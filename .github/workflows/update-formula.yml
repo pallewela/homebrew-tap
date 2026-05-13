@@ -1,0 +1,77 @@
+name: Update rusta formula
+
+on:
+  repository_dispatch:
+    types: [rusta-release]
+  workflow_dispatch:
+    inputs:
+      tag:
+        description: 'Release tag (e.g. v0.1.0)'
+        required: true
+      url:
+        description: 'Release tarball URL'
+        required: true
+      sha256:
+        description: 'Tarball SHA256'
+        required: true
+
+permissions:
+  contents: write
+
+jobs:
+  bump:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Resolve inputs
+        id: r
+        run: |
+          set -euo pipefail
+          if [ "${{ github.event_name }}" = "repository_dispatch" ]; then
+            TAG='${{ github.event.client_payload.tag }}'
+            URL='${{ github.event.client_payload.url }}'
+            SHA='${{ github.event.client_payload.sha256 }}'
+          else
+            TAG='${{ inputs.tag }}'
+            URL='${{ inputs.url }}'
+            SHA='${{ inputs.sha256 }}'
+          fi
+          [ -n "$TAG" ] && [ -n "$URL" ] && [ -n "$SHA" ] || { echo "missing inputs" >&2; exit 1; }
+          {
+            echo "tag=$TAG"
+            echo "url=$URL"
+            echo "sha256=$SHA"
+            echo "version=${TAG#v}"
+          } >> "$GITHUB_OUTPUT"
+
+      - name: Rewrite Formula/rusta.rb
+        env:
+          VERSION: ${{ steps.r.outputs.version }}
+          URL: ${{ steps.r.outputs.url }}
+          SHA256: ${{ steps.r.outputs.sha256 }}
+        run: |
+          set -euo pipefail
+          test -f Formula/rusta.rb
+          # Use `|` as the sed delimiter since the URL contains slashes.
+          sed -i -E "s|^(  version )\".*\"|\\1\"${VERSION}\"|" Formula/rusta.rb
+          sed -i -E "s|^(  url )\".*\"|\\1\"${URL}\"|"         Formula/rusta.rb
+          sed -i -E "s|^(  sha256 )\".*\"|\\1\"${SHA256}\"|"   Formula/rusta.rb
+          echo '--- formula after rewrite ---'
+          cat Formula/rusta.rb
+
+      - name: Commit and push
+        env:
+          TAG: ${{ steps.r.outputs.tag }}
+        run: |
+          set -euo pipefail
+          git config user.name  'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          if git diff --quiet -- Formula/rusta.rb; then
+            echo "Formula already at ${TAG}; nothing to do."
+            exit 0
+          fi
+          git add Formula/rusta.rb
+          git commit -m "rusta ${TAG}"
+          git push
