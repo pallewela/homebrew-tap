@@ -3,7 +3,7 @@ class Rusta < Formula
   homepage "https://github.com/pallewela/rusta"
   version "1.0.9"
   url "https://github.com/pallewela/rusta/releases/download/v1.0.9/rusta-v1.0.9-aarch64-apple-darwin.tar.gz"
-  sha256 "631071495ea12b9c0a9e5c7b02343f37e4b489e1006d0e19580bff5712113bfc"
+  sha256 "e6dc986d1e93b91cdb90e374ed84c47ba58f153a5610911abcdcf7e107a41e6e"
   license "MIT"
 
   depends_on arch: :arm64
