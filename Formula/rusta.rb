@@ -1,9 +1,9 @@
 class Rusta < Formula
   desc "macOS CLI for managing Ubuntu VMs on Apple Silicon via Tart"
   homepage "https://github.com/pallewela/rusta"
-  version "1.0.26"
-  url "https://github.com/pallewela/rusta/releases/download/v1.0.26/rusta-v1.0.26-aarch64-apple-darwin.tar.gz"
-  sha256 "f1e81ee5f12a5e15fde437b3146197b259d494c46e5b87f3a00ea0e5b7ef0200"
+  version "1.0.27"
+  url "https://github.com/pallewela/rusta/releases/download/v1.0.27/rusta-v1.0.27-aarch64-apple-darwin.tar.gz"
+  sha256 "15f6021fedd392f618348044d74be0cd47a6a871e20d4681033375d4a20d8379"
   license "MIT"
 
   depends_on arch: :arm64
