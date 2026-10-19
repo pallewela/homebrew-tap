@@ -1,0 +1,49 @@
+name: Update multilink cask
+
+on:
+  repository_dispatch:
+    types: [multilink-release]
+  workflow_dispatch:
+    inputs:
+      tag:
+        description: 'Release tag (e.g. v0.1.0)'
+        required: true
+      sha256:
+        description: 'DMG SHA256'
+        required: true
+
+permissions:
+  contents: write
+
+jobs:
+  bump:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Rewrite Casks/multilink.rb
+        env:
+          TAG: ${{ github.event.client_payload.tag || inputs.tag }}
+          SHA256: ${{ github.event.client_payload.sha256 || inputs.sha256 }}
+        run: |
+          set -euo pipefail
+          [ -n "$TAG" ] && [ -n "$SHA256" ] || { echo "missing inputs" >&2; exit 1; }
+          sed -i -E "s|^(  version )\".*\"|\\1\"${TAG#v}\"|" Casks/multilink.rb
+          sed -i -E "s|^(  sha256 )\".*\"|\\1\"${SHA256}\"|" Casks/multilink.rb
+          cat Casks/multilink.rb
+
+      - name: Commit and push
+        env:
+          TAG: ${{ github.event.client_payload.tag || inputs.tag }}
+        run: |
+          set -euo pipefail
+          git config user.name  'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          if git diff --quiet -- Casks/multilink.rb; then
+            echo "Cask already at ${TAG}; nothing to do."
+            exit 0
+          fi
+          git add Casks/multilink.rb
+          git commit -m "multilink ${TAG}"
+          git push
