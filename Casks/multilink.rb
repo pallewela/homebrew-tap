@@ -1,6 +1,6 @@
 cask "multilink" do
-  version "0.1.0-alpha.4"
-  sha256 "d03a2af69f259769ff518ec628478a38edfde781c2fddb5cac88e7ab6ce0bb4e"
+  version "0.1.0-alpha.5"
+  sha256 "94689a4148b8daed19e093ad79c530c15b5e4b3a749861ab8418c9a918fb2ffe"
 
   url "https://github.com/pallewela/multilink/releases/download/v#{version}/Multilink-#{version}-macos.dmg"
   name "Multilink"
