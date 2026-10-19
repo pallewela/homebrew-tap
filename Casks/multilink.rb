@@ -12,11 +12,9 @@ cask "multilink" do
 
   app "Multilink.app"
 
-  # Not notarized yet: clear the quarantine flag so Gatekeeper lets it open. `postflight` is
-  # deprecated in Homebrew 7 but no declarative step clears xattrs; drop this once notarized.
-  postflight do
-    system_command "/usr/bin/xattr",
-                   args: ["-dr", "com.apple.quarantine", "#{appdir}/Multilink.app"]
+  # Not notarized yet: clear the quarantine flag so Gatekeeper lets it open; drop once notarized.
+  postflight_steps do
+    run "/usr/bin/xattr", args: ["-dr", "com.apple.quarantine", "{{appdir}}/Multilink.app"]
   end
 
   uninstall launchctl: "com.multilink.bar.daemon",
