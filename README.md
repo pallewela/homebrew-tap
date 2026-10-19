@@ -1,18 +1,23 @@
 # homebrew-tap
 
-Homebrew tap for [`rusta`](https://github.com/pallewela/rusta).
+Homebrew tap for [`rusta`](https://github.com/pallewela/rusta) and
+[`multilink`](https://github.com/pallewela/multilink).
 
 ## Install
 
 ```sh
 brew install pallewela/tap/rusta
+brew install --cask pallewela/tap/multilink
 ```
 
-## Formulae
+## Formulae and casks
 
-| Formula | Description                                                  |
-| ------- | ------------------------------------------------------------ |
-| `rusta` | macOS CLI for managing Ubuntu VMs on Apple Silicon via Tart. |
+| Name                | Description                                                     |
+| ------------------- | --------------------------------------------------------------- |
+| `rusta`             | macOS CLI for managing Ubuntu VMs on Apple Silicon via Tart.    |
+| `multilink` (cask)  | Menu bar app that balances connections across network links.    |
+
+`multilink` isn't notarized yet, so the cask clears the quarantine flag after install.
 
 ## How releases land here
 
@@ -22,6 +27,9 @@ of type `rusta-release` when a new `v*` tag is pushed. The
 rewrites `Formula/rusta.rb` with the new version, tarball URL, and
 SHA256.
 
-If automation breaks, the same workflow exposes a `workflow_dispatch`
-trigger that accepts `tag`, `url`, and `sha256` as inputs so you can
-bump the formula manually from the Actions tab.
+`pallewela/multilink` does the same with a `multilink-release` event,
+handled by `.github/workflows/update-cask.yml`, which rewrites the
+version and SHA256 in `Casks/multilink.rb`.
+
+If automation breaks, both workflows expose a `workflow_dispatch`
+trigger so you can bump them manually from the Actions tab.
