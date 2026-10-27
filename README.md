@@ -1,13 +1,15 @@
 # homebrew-tap
 
-Homebrew tap for [`rusta`](https://github.com/pallewela/rusta) and
-[`multilink`](https://github.com/pallewela/multilink).
+Homebrew tap for [`rusta`](https://github.com/pallewela/rusta),
+[`multilink`](https://github.com/pallewela/multilink) and
+[`diskfree`](https://github.com/pallewela/diskfree).
 
 ## Install
 
 ```sh
 brew install pallewela/tap/rusta
 brew install --cask pallewela/tap/multilink
+brew install --cask pallewela/tap/diskfree
 ```
 
 ## Formulae and casks
@@ -16,8 +18,9 @@ brew install --cask pallewela/tap/multilink
 | ------------------- | --------------------------------------------------------------- |
 | `rusta`             | macOS CLI for managing Ubuntu VMs on Apple Silicon via Tart.    |
 | `multilink` (cask)  | Menu bar app that balances connections across network links.    |
+| `diskfree` (cask)   | Disk usage explorer with a size-sorted tree (macOS 26+).        |
 
-`multilink` isn't notarized yet, so the cask clears the quarantine flag after install.
+`multilink` and `diskfree` aren't notarized yet, so their casks clear the quarantine flag after install.
 
 ## How releases land here
 
@@ -30,6 +33,10 @@ SHA256.
 `pallewela/multilink` does the same with a `multilink-release` event,
 handled by `.github/workflows/update-cask.yml`, which rewrites the
 version and SHA256 in `Casks/multilink.rb`.
+
+`pallewela/diskfree` sends a `diskfree-release` event, handled by
+`.github/workflows/update-diskfree-cask.yml`. That workflow writes the
+whole `Casks/diskfree.rb` from a template, so the first release creates it.
 
 If automation breaks, both workflows expose a `workflow_dispatch`
 trigger so you can bump them manually from the Actions tab.
