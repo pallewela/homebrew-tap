@@ -1,0 +1,70 @@
+name: Update diskfree cask
+
+on:
+  repository_dispatch:
+    types: [diskfree-release]
+  workflow_dispatch:
+    inputs:
+      tag:
+        description: 'Release tag (e.g. v0.1.1)'
+        required: true
+      sha256:
+        description: 'DMG SHA256'
+        required: true
+
+permissions:
+  contents: write
+
+jobs:
+  bump:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v4
+
+      # Writes the whole cask (rather than sed-editing it) so the first release creates it.
+      - name: Write Casks/diskfree.rb
+        env:
+          TAG: ${{ github.event.client_payload.tag || inputs.tag }}
+          SHA256: ${{ github.event.client_payload.sha256 || inputs.sha256 }}
+        run: |
+          set -euo pipefail
+          [ -n "$TAG" ] && [ -n "$SHA256" ] || { echo "missing inputs" >&2; exit 1; }
+          mkdir -p Casks
+          cat > Casks/diskfree.rb <<CASK
+          cask "diskfree" do
+            version "${TAG#v}"
+            sha256 "${SHA256}"
+
+            url "https://github.com/pallewela/diskfree/releases/download/v#{version}/Diskfree-macos-arm64.dmg"
+            name "diskfree"
+            desc "Disk usage explorer with a size-sorted tree for finding what to clean up"
+            homepage "https://github.com/pallewela/diskfree"
+
+            depends_on arch: :arm64
+            depends_on macos: :tahoe
+
+            app "Diskfree.app"
+
+            # Not notarized yet: clear the quarantine flag so Gatekeeper lets it open; drop once notarized.
+            postflight_steps do
+              run "/usr/bin/xattr", args: ["-dr", "com.apple.quarantine", "{{appdir}}/Diskfree.app"]
+            end
+          end
+          CASK
+          cat Casks/diskfree.rb
+
+      - name: Commit and push
+        env:
+          TAG: ${{ github.event.client_payload.tag || inputs.tag }}
+        run: |
+          set -euo pipefail
+          git config user.name  'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add Casks/diskfree.rb
+          if git diff --cached --quiet; then
+            echo "Cask already at ${TAG}; nothing to do."
+            exit 0
+          fi
+          git commit -m "diskfree ${TAG}"
+          git push
