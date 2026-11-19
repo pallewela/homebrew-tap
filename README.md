@@ -19,7 +19,7 @@ brew install --cask pallewela/tap/diskfree
 | Name                | Description                                                     |
 | ------------------- | --------------------------------------------------------------- |
 | `rusta`             | macOS CLI for managing Ubuntu VMs on Apple Silicon via Tart.    |
-| `bb`                | `gh`-style CLI for Bitbucket Cloud (conflicts with `babashka`). |
+| `bb`                | `gh`-style CLI for Bitbucket Cloud.                             |
 | `multilink` (cask)  | Menu bar app that balances connections across network links.    |
 | `diskfree` (cask)   | Disk usage explorer with a size-sorted tree (macOS 26+).        |
 
