@@ -1,9 +1,9 @@
 class Bb < Formula
   desc "Work with Bitbucket Cloud from the command line, gh-style"
   homepage "https://github.com/pallewela/bb"
-  version "0.2.0"
+  version "0.2.1"
   url "https://github.com/pallewela/bb/releases/download/v#{version}/bb-v#{version}-aarch64-apple-darwin.tar.gz"
-  sha256 "00bed669e6f300dca3c2a293625d48220a930de5c231b16413447a738e2c1bc0"
+  sha256 "416a7b6995d200ab651ff256d01684966aef8053365048c53bb3ff200a08012a"
   license "MIT"
 
   depends_on arch: :arm64
