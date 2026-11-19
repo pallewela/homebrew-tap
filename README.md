@@ -1,6 +1,7 @@
 # homebrew-tap
 
 Homebrew tap for [`rusta`](https://github.com/pallewela/rusta),
+[`bb`](https://github.com/pallewela/bb),
 [`multilink`](https://github.com/pallewela/multilink) and
 [`diskfree`](https://github.com/pallewela/diskfree).
 
@@ -8,6 +9,7 @@ Homebrew tap for [`rusta`](https://github.com/pallewela/rusta),
 
 ```sh
 brew install pallewela/tap/rusta
+brew install pallewela/tap/bb
 brew install --cask pallewela/tap/multilink
 brew install --cask pallewela/tap/diskfree
 ```
@@ -17,6 +19,7 @@ brew install --cask pallewela/tap/diskfree
 | Name                | Description                                                     |
 | ------------------- | --------------------------------------------------------------- |
 | `rusta`             | macOS CLI for managing Ubuntu VMs on Apple Silicon via Tart.    |
+| `bb`                | `gh`-style CLI for Bitbucket Cloud (conflicts with `babashka`). |
 | `multilink` (cask)  | Menu bar app that balances connections across network links.    |
 | `diskfree` (cask)   | Disk usage explorer with a size-sorted tree (macOS 26+).        |
 
@@ -34,9 +37,13 @@ SHA256.
 handled by `.github/workflows/update-cask.yml`, which rewrites the
 version and SHA256 in `Casks/multilink.rb`.
 
+`pallewela/bb` sends a `bb-release` event, handled by
+`.github/workflows/update-bb-formula.yml`, which writes the whole
+`Formula/bb.rb` from a template, so the first release creates it.
+
 `pallewela/diskfree` sends a `diskfree-release` event, handled by
 `.github/workflows/update-diskfree-cask.yml`. That workflow writes the
 whole `Casks/diskfree.rb` from a template, so the first release creates it.
 
-If automation breaks, both workflows expose a `workflow_dispatch`
+If automation breaks, every workflow expose a `workflow_dispatch`
 trigger so you can bump them manually from the Actions tab.

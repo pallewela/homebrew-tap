@@ -1,0 +1,78 @@
+name: Update bb formula
+
+on:
+  repository_dispatch:
+    types: [bb-release]
+  workflow_dispatch:
+    inputs:
+      tag:
+        description: 'Release tag (e.g. v0.1.0)'
+        required: true
+      sha256:
+        description: 'Tarball SHA256'
+        required: true
+
+permissions:
+  contents: write
+
+concurrency:
+  group: update-bb-formula
+  cancel-in-progress: false
+
+jobs:
+  bump:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v4
+
+      # Writes the whole formula (rather than sed-editing it) so the first release creates it.
+      - name: Write Formula/bb.rb
+        env:
+          TAG: ${{ github.event.client_payload.tag || inputs.tag }}
+          SHA256: ${{ github.event.client_payload.sha256 || inputs.sha256 }}
+        run: |
+          set -euo pipefail
+          [ -n "$TAG" ] && [ -n "$SHA256" ] || { echo "missing inputs" >&2; exit 1; }
+          echo "$TAG" | grep -qE '^v[0-9]+\.[0-9]+\.[0-9]+$' || { echo "bad tag: $TAG" >&2; exit 1; }
+          echo "$SHA256" | grep -qE '^[0-9a-f]{64}$' || { echo "bad sha256" >&2; exit 1; }
+          mkdir -p Formula
+          cat > Formula/bb.rb <<FORMULA
+          class Bb < Formula
+            desc "Work with Bitbucket Cloud from the command line, gh-style"
+            homepage "https://github.com/pallewela/bb"
+            version "${TAG#v}"
+            url "https://github.com/pallewela/bb/releases/download/v#{version}/bb-v#{version}-aarch64-apple-darwin.tar.gz"
+            sha256 "${SHA256}"
+            license "MIT"
+
+            depends_on arch: :arm64
+            depends_on :macos
+
+            conflicts_with "babashka", because: "both install a \`bb\` binary"
+
+            def install
+              bin.install "bb"
+            end
+
+            test do
+              assert_match version.to_s, shell_output("#{bin}/bb --version")
+            end
+          end
+          FORMULA
+          cat Formula/bb.rb
+
+      - name: Commit and push
+        env:
+          TAG: ${{ github.event.client_payload.tag || inputs.tag }}
+        run: |
+          set -euo pipefail
+          git config user.name  'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add Formula/bb.rb
+          if git diff --cached --quiet; then
+            echo "Formula already at ${TAG}; nothing to do."
+            exit 0
+          fi
+          git commit -m "bb ${TAG}"
+          git push
