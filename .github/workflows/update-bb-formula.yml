@@ -1,5 +1,9 @@
 name: Update bb formula
 
+# pallewela/bb's release workflow sends a `bb-release` event with the tag and each archive's
+# SHA256. With all four per-target checksums, Formula/bb.rb covers macOS and Linux on arm64 and
+# x86_64; with only `sha256` (older bb releases: the macOS arm64 archive), it is macOS arm64 only.
+
 on:
   repository_dispatch:
     types: [bb-release]
@@ -9,8 +13,17 @@ on:
         description: 'Release tag (e.g. v0.1.0)'
         required: true
       sha256:
-        description: 'Tarball SHA256'
+        description: 'SHA256 of the aarch64-apple-darwin tarball'
         required: true
+      sha256_x86_64_apple_darwin:
+        description: 'SHA256 of the x86_64-apple-darwin tarball (empty: macOS arm64 only)'
+        required: false
+      sha256_x86_64_unknown_linux_musl:
+        description: 'SHA256 of the x86_64-unknown-linux-musl tarball'
+        required: false
+      sha256_aarch64_unknown_linux_musl:
+        description: 'SHA256 of the aarch64-unknown-linux-musl tarball'
+        required: false
 
 permissions:
   contents: write
@@ -30,24 +43,71 @@ jobs:
       - name: Write Formula/bb.rb
         env:
           TAG: ${{ github.event.client_payload.tag || inputs.tag }}
-          SHA256: ${{ github.event.client_payload.sha256 || inputs.sha256 }}
+          MAC_ARM: ${{ github.event.client_payload.sha256_aarch64_apple_darwin || github.event.client_payload.sha256 || inputs.sha256 }}
+          MAC_INTEL: ${{ github.event.client_payload.sha256_x86_64_apple_darwin || inputs.sha256_x86_64_apple_darwin }}
+          LINUX_INTEL: ${{ github.event.client_payload.sha256_x86_64_unknown_linux_musl || inputs.sha256_x86_64_unknown_linux_musl }}
+          LINUX_ARM: ${{ github.event.client_payload.sha256_aarch64_unknown_linux_musl || inputs.sha256_aarch64_unknown_linux_musl }}
         run: |
           set -euo pipefail
-          [ -n "$TAG" ] && [ -n "$SHA256" ] || { echo "missing inputs" >&2; exit 1; }
+          [ -n "$TAG" ] && [ -n "$MAC_ARM" ] || { echo "missing inputs" >&2; exit 1; }
           echo "$TAG" | grep -qE '^v[0-9]+\.[0-9]+\.[0-9]+$' || { echo "bad tag: $TAG" >&2; exit 1; }
-          echo "$SHA256" | grep -qE '^[0-9a-f]{64}$' || { echo "bad sha256" >&2; exit 1; }
+          for v in MAC_ARM MAC_INTEL LINUX_INTEL LINUX_ARM; do
+            sum="${!v}"
+            [ -z "$sum" ] || echo "$sum" | grep -qE '^[0-9a-f]{64}$' || { echo "bad sha256 for $v" >&2; exit 1; }
+          done
+          if [ -n "$MAC_INTEL" ] && [ -n "$LINUX_INTEL" ] && [ -n "$LINUX_ARM" ]; then
+            ALL=1
+          elif [ -z "$MAC_INTEL$LINUX_INTEL$LINUX_ARM" ]; then
+            ALL=""
+          else
+            echo "give all four checksums, or only the macOS arm64 one" >&2; exit 1
+          fi
+          URL='https://github.com/pallewela/bb/releases/download/v#{version}/bb-v#{version}'
           mkdir -p Formula
-          cat > Formula/bb.rb <<FORMULA
+          {
+            cat <<FORMULA
           class Bb < Formula
             desc "Work with Bitbucket Cloud from the command line, gh-style"
             homepage "https://github.com/pallewela/bb"
             version "${TAG#v}"
-            url "https://github.com/pallewela/bb/releases/download/v#{version}/bb-v#{version}-aarch64-apple-darwin.tar.gz"
-            sha256 "${SHA256}"
+          FORMULA
+            if [ -n "$ALL" ]; then
+              cat <<FORMULA
+            license "MIT"
+
+            on_macos do
+              on_arm do
+                url "${URL}-aarch64-apple-darwin.tar.gz"
+                sha256 "${MAC_ARM}"
+              end
+              on_intel do
+                url "${URL}-x86_64-apple-darwin.tar.gz"
+                sha256 "${MAC_INTEL}"
+              end
+            end
+
+            on_linux do
+              on_arm do
+                url "${URL}-aarch64-unknown-linux-musl.tar.gz"
+                sha256 "${LINUX_ARM}"
+              end
+              on_intel do
+                url "${URL}-x86_64-unknown-linux-musl.tar.gz"
+                sha256 "${LINUX_INTEL}"
+              end
+            end
+          FORMULA
+            else
+              cat <<FORMULA
+            url "${URL}-aarch64-apple-darwin.tar.gz"
+            sha256 "${MAC_ARM}"
             license "MIT"
 
             depends_on arch: :arm64
             depends_on :macos
+          FORMULA
+            fi
+            cat <<'FORMULA'
 
             def install
               bin.install "bb"
@@ -58,6 +118,7 @@ jobs:
             end
           end
           FORMULA
+          } > Formula/bb.rb
           cat Formula/bb.rb
 
       - name: Commit and push

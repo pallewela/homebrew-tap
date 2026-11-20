@@ -19,7 +19,7 @@ brew install --cask pallewela/tap/diskfree
 | Name                | Description                                                     |
 | ------------------- | --------------------------------------------------------------- |
 | `rusta`             | macOS CLI for managing Ubuntu VMs on Apple Silicon via Tart.    |
-| `bb`                | `gh`-style CLI for Bitbucket Cloud.                             |
+| `bb`                | `gh`-style CLI for Bitbucket Cloud (macOS and Linux).           |
 | `multilink` (cask)  | Menu bar app that balances connections across network links.    |
 | `diskfree` (cask)   | Disk usage explorer with a size-sorted tree (macOS 26+).        |
 
@@ -39,7 +39,9 @@ version and SHA256 in `Casks/multilink.rb`.
 
 `pallewela/bb` sends a `bb-release` event, handled by
 `.github/workflows/update-bb-formula.yml`, which writes the whole
-`Formula/bb.rb` from a template, so the first release creates it.
+`Formula/bb.rb` from a template, so the first release creates it. With the
+per-target checksums in the event, the formula covers macOS and Linux on
+arm64 and x86_64; with only `sha256` (older bb releases), macOS arm64 only.
 
 `pallewela/diskfree` sends a `diskfree-release` event, handled by
 `.github/workflows/update-diskfree-cask.yml`. That workflow writes the
