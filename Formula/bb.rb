@@ -1,28 +1,28 @@
 class Bb < Formula
   desc "Work with Bitbucket Cloud from the command line, gh-style"
   homepage "https://github.com/pallewela/bb"
-  version "0.2.10"
+  version "0.2.11"
   license "MIT"
 
   on_macos do
     on_arm do
       url "https://github.com/pallewela/bb/releases/download/v#{version}/bb-v#{version}-aarch64-apple-darwin.tar.gz"
-      sha256 "a527070217a65024090379a81e3e8b4fc37246ea36c47883ecfc952fa84bb3fb"
+      sha256 "dc9c9ab3be97ac476b6750fc6306dfccb55786cfbbd1f48616da89c05a90c5ce"
     end
     on_intel do
       url "https://github.com/pallewela/bb/releases/download/v#{version}/bb-v#{version}-x86_64-apple-darwin.tar.gz"
-      sha256 "434d88a7273abcc434088bb6da7097ded97c21d751535a457184ebb27cdfa1f2"
+      sha256 "375a86de5d0de98497783cea0975987bdc7d49ce6a9f55b5a0ae1bdce23036d6"
     end
   end
 
   on_linux do
     on_arm do
       url "https://github.com/pallewela/bb/releases/download/v#{version}/bb-v#{version}-aarch64-unknown-linux-musl.tar.gz"
-      sha256 "edaa4eb6e833906ccc7c982e93d2dc1887a05b4bbd4479541f3488bec8b0507a"
+      sha256 "eae2bec977cdf95214eb046bac8f369c61f94d5e9922e1472b56356453b529e0"
     end
     on_intel do
       url "https://github.com/pallewela/bb/releases/download/v#{version}/bb-v#{version}-x86_64-unknown-linux-musl.tar.gz"
-      sha256 "cbc9752c12298102f7190fbc04c91a1d5726e48ab4935f3031c5f64a0e65b426"
+      sha256 "e1a13397b91f8b90db9ddffc383770fdb6c355a657a9c1f00cc1700d3952e883"
     end
   end
 
